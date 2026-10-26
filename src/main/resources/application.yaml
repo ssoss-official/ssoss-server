@@ -66,6 +66,9 @@ auth:
       connect-timeout: 3s
       read-timeout: 5s
 
+credit:
+  free-grant: 100
+
 ---
 spring:
   config:

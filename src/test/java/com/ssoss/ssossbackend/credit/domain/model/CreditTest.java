@@ -36,9 +36,9 @@ class CreditTest {
         @Test
         @DisplayName("무료 크레딧을 지급하면 무료 잔액에 더해지고 지급 사이클이 기록된다")
         void addsToFreeBalanceAndRecordsCycle_whenFreeCreditGranted() {
-            Credit credit = Credit.create(1L).grant(Credit.CYCLE_FREE_GRANT, CYCLE);
+            Credit credit = Credit.create(1L).grant(100, CYCLE);
 
-            assertThat(credit.getFreeBalance()).isEqualTo(50);
+            assertThat(credit.getFreeBalance()).isEqualTo(100);
             assertThat(credit.getChargedBalance()).isZero();
             assertThat(credit.getGrantedCycleAt()).isEqualTo(CYCLE.startsAt());
         }
@@ -51,7 +51,7 @@ class CreditTest {
         @Test
         @DisplayName("지급받은 사이클로 판정하면 지급된 것으로 본다")
         void returnsTrue_whenQueriedWithGrantedCycle() {
-            Credit credit = Credit.create(1L).grant(Credit.CYCLE_FREE_GRANT, CYCLE);
+            Credit credit = Credit.create(1L).grant(100, CYCLE);
 
             assertThat(credit.isGrantedFor(CYCLE)).isTrue();
         }
@@ -59,7 +59,7 @@ class CreditTest {
         @Test
         @DisplayName("지급받은 적 없는 사이클로 판정하면 지급되지 않은 것으로 본다")
         void returnsFalse_whenQueriedWithDifferentCycle() {
-            Credit credit = Credit.create(1L).grant(Credit.CYCLE_FREE_GRANT, CYCLE);
+            Credit credit = Credit.create(1L).grant(100, CYCLE);
 
             assertThat(credit.isGrantedFor(NEXT_CYCLE)).isFalse();
         }

@@ -26,14 +26,14 @@ class CreditBalanceApiTest extends IntegrationTest {
     class Balance {
 
         @Test
-        @DisplayName("가입 직후 조회하면 가입 지급 무료 크레딧 50 이 잔액으로 반환된다")
+        @DisplayName("가입 직후 조회하면 가입 지급 무료 크레딧 100 이 잔액으로 반환된다")
         void returnsSignupGrantedBalance_whenActiveMemberQueriesRightAfterSignup() {
             SignupResponse signup = fixture.signupActiveMember("naver-credit-balance");
 
             fixture.getCreditBalance(signup.accessToken())
                 .expectStatus().isOk()
                 .expectBody(CreditBalanceResponse.class)
-                .value(body -> assertThat(body.balance()).isEqualTo(50));
+                .value(body -> assertThat(body.balance()).isEqualTo(100));
         }
 
         @Test
@@ -85,7 +85,7 @@ class CreditBalanceApiTest extends IntegrationTest {
 
             assertThat(entries).singleElement().satisfies(entry -> {
                 assertThat(entry.getType()).isEqualTo(CreditLedgerType.GRANT);
-                assertThat(entry.getAmount()).isEqualTo(50);
+                assertThat(entry.getAmount()).isEqualTo(100);
                 assertThat(entry.getGenerationId()).isNull();
             });
             int ledgerSum = entries.stream().mapToInt(CreditLedger::getAmount).sum();

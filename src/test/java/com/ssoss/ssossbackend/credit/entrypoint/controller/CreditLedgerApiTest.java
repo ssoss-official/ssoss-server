@@ -48,7 +48,7 @@ class CreditLedgerApiTest extends IntegrationTest {
                 assertThat(ledger.ledgerId()).isNotNull();
                 assertThat(ledger.type()).isEqualTo("GRANT");
                 assertThat(ledger.description()).isEqualTo("가입 크레딧 지급");
-                assertThat(ledger.amount()).isEqualTo(50);
+                assertThat(ledger.amount()).isEqualTo(100);
                 assertThat(ledger.occurredAt()).isNotNull();
             });
         }
@@ -296,7 +296,7 @@ class CreditLedgerApiTest extends IntegrationTest {
                 .singleElement()
                 .satisfies(entry -> {
                     assertThat(entry.getDescription()).isEqualTo("8월 크레딧 소멸");
-                    assertThat(entry.getAmount()).isEqualTo(-50);
+                    assertThat(entry.getAmount()).isEqualTo(-100);
                 });
             int ledgerSum = entries.stream().mapToInt(CreditLedger::getAmount).sum();
             String accessToken = fixture.naverLoginMember("naver-ledger-hidden-expire").accessToken();

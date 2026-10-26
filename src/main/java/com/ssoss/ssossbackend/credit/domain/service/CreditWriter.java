@@ -10,25 +10,36 @@ import com.ssoss.ssossbackend.credit.domain.model.CreditErrorCode;
 import com.ssoss.ssossbackend.credit.domain.model.CreditLedger;
 import com.ssoss.ssossbackend.shared.exception.BusinessException;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class CreditWriter {
 
     private final CreditRepository creditRepository;
     private final CreditLedgerRepository creditLedgerRepository;
     private final Clock clock;
+    private final int freeGrant;
+
+    public CreditWriter(
+        CreditRepository creditRepository,
+        CreditLedgerRepository creditLedgerRepository,
+        Clock clock,
+        @Value("${credit.free-grant}") int freeGrant
+    ) {
+        this.creditRepository = creditRepository;
+        this.creditLedgerRepository = creditLedgerRepository;
+        this.clock = clock;
+        this.freeGrant = freeGrant;
+    }
 
     @Transactional
     public void grant(Long memberId) {
         CreditCycle cycle = CreditCycle.current(clock.instant());
-        creditRepository.save(Credit.create(memberId).grant(Credit.CYCLE_FREE_GRANT, cycle));
-        creditLedgerRepository.save(CreditLedger.signupGrant(memberId, Credit.CYCLE_FREE_GRANT));
+        creditRepository.save(Credit.create(memberId).grant(freeGrant, cycle));
+        creditLedgerRepository.save(CreditLedger.signupGrant(memberId, freeGrant));
     }
 
     @Transactional
@@ -53,8 +64,8 @@ public class CreditWriter {
         if (expired > 0) {
             creditLedgerRepository.save(CreditLedger.expire(memberId, expired, expiringCycle));
         }
-        creditRepository.save(credit.grant(Credit.CYCLE_FREE_GRANT, cycle));
-        creditLedgerRepository.save(CreditLedger.cycleGrant(memberId, Credit.CYCLE_FREE_GRANT, cycle));
+        creditRepository.save(credit.grant(freeGrant, cycle));
+        creditLedgerRepository.save(CreditLedger.cycleGrant(memberId, freeGrant, cycle));
         return true;
     }
 

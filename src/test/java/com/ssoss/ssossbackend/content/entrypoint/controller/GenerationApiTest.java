@@ -829,7 +829,7 @@ class GenerationApiTest extends IntegrationTest {
 
             Long generationId = fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM"));
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(40);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(90);
             assertThat(database.deductionsOf(database.memberIdOf("naver-gen-credit-deduct"))).singleElement()
                 .satisfies(entry -> {
                     assertThat(entry.getAmount()).isEqualTo(-10);
@@ -845,7 +845,7 @@ class GenerationApiTest extends IntegrationTest {
 
             fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM"));
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(50);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(100);
             assertThat(database.deductionsOf(database.memberIdOf("naver-gen-credit-one-fail"))).isEmpty();
         }
 
@@ -857,7 +857,7 @@ class GenerationApiTest extends IntegrationTest {
 
             fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM"));
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(50);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(100);
             assertThat(database.deductionsOf(database.memberIdOf("naver-gen-credit-fail"))).isEmpty();
         }
 
@@ -869,7 +869,7 @@ class GenerationApiTest extends IntegrationTest {
             fixture.startedGenerationId(signup.accessToken(), List.of("BLOG"));
             fixture.startedGenerationId(signup.accessToken(), List.of("BLOG"));
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(40);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(90);
             assertThat(database.deductionsOf(database.memberIdOf("naver-gen-credit-again"))).hasSize(2);
         }
 
@@ -886,21 +886,21 @@ class GenerationApiTest extends IntegrationTest {
             fixture.getGeneration(signup.accessToken(), generationId)
                 .expectBody(GenerationDetailResponse.class)
                 .value(body -> assertThat(body.status()).isEqualTo("FAILED"));
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(50);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(100);
             assertThat(database.deductionsOf(database.memberIdOf("naver-gen-credit-late"))).isEmpty();
         }
 
         @Test
-        @DisplayName("사이클 경계를 넘겨 배치가 돌면 잔액이 50 으로 돌아온다")
+        @DisplayName("사이클 경계를 넘겨 배치가 돌면 잔액이 100 으로 돌아온다")
         void returnsFullBalance_whenCycleBoundaryPassedAndBatchRan() {
             SignupResponse signup = fixture.signupActiveMember("naver-gen-credit-cycle");
             fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM"));
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(40);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(90);
 
             clock.advanceBy(Duration.ofDays(31));
             creditCycleScheduler.renewCycles();
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(50);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(100);
         }
     }
 
@@ -916,6 +916,9 @@ class GenerationApiTest extends IntegrationTest {
             SignupResponse signup = fixture.signupActiveMember("naver-gen-credit-short");
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM"));
             assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(10);
 
             fixture.startGeneration(signup.accessToken(), ALL_CHANNELS)
@@ -923,7 +926,7 @@ class GenerationApiTest extends IntegrationTest {
                 .expectBody(ErrorResponse.class)
                 .value(body -> assertThat(body.code()).isEqualTo(CreditErrorCode.CREDIT_INSUFFICIENT.getCode()));
 
-            assertThat(database.generationsOf(database.memberIdOf("naver-gen-credit-short"))).hasSize(2);
+            assertThat(database.generationsOf(database.memberIdOf("naver-gen-credit-short"))).hasSize(5);
             assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(10);
         }
 
@@ -933,7 +936,9 @@ class GenerationApiTest extends IntegrationTest {
             SignupResponse signup = fixture.signupActiveMember("naver-gen-credit-exhaust");
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
-            fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM"));
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
             assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(0);
 
             fixture.startGeneration(signup.accessToken(), List.of("BLOG"))

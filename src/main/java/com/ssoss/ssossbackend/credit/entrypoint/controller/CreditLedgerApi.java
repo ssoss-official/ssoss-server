@@ -49,14 +49,14 @@ interface CreditLedgerApi {
                           "ledgerId": 8,
                           "type": "GRANT",
                           "description": "8월 크레딧 지급",
-                          "amount": 50,
+                          "amount": 100,
                           "occurredAt": "2026-08-02T15:00:00Z"
                         },
                         {
                           "ledgerId": 1,
                           "type": "GRANT",
                           "description": "가입 크레딧 지급",
-                          "amount": 50,
+                          "amount": 100,
                           "occurredAt": "2026-07-17T04:22:11Z"
                         }
                       ]

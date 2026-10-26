@@ -196,7 +196,9 @@ class StyleReuseApiTest extends IntegrationTest {
             ContentSaveResponse origin = savedOrigin(signup.accessToken(), "BLOG");
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
-            fixture.startedGenerationId(signup.accessToken(), List.of("BLOG"));
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM", "THREADS"));
             assertThat(fixture.creditBalance(signup.accessToken()).balance()).isZero();
 
             fixture.reuseStyle(signup.accessToken(), origin.contentId(),
@@ -205,7 +207,7 @@ class StyleReuseApiTest extends IntegrationTest {
                 .expectBody(ErrorResponse.class)
                 .value(body -> assertThat(body.code()).isEqualTo(CreditErrorCode.CREDIT_INSUFFICIENT.getCode()));
 
-            assertThat(database.generationsOf(database.memberIdOf("naver-reuse-credit-short"))).hasSize(4);
+            assertThat(database.generationsOf(database.memberIdOf("naver-reuse-credit-short"))).hasSize(6);
         }
 
         @Test
@@ -377,12 +379,12 @@ class StyleReuseApiTest extends IntegrationTest {
         void deductsFiveCredits_whenReuseSucceeded() {
             SignupResponse signup = fixture.signupActiveMember("naver-reuse-deduct");
             ContentSaveResponse origin = savedOrigin(signup.accessToken(), "BLOG");
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(45);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(95);
 
             fixture.reusedGenerationId(signup.accessToken(), origin.contentId(),
                 origin.contents().getFirst().contentChannelId(), fixture.styleReuseBody("새 강조 내용"));
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(40);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(90);
             assertThat(database.deductionsOf(database.memberIdOf("naver-reuse-deduct"))).hasSize(2);
         }
 
@@ -421,7 +423,7 @@ class StyleReuseApiTest extends IntegrationTest {
 
             assertThat(first).isNotEqualTo(second);
             assertThat(database.generationsOf(database.memberIdOf("naver-reuse-repeat"))).hasSize(3);
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(35);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(85);
         }
     }
 }
