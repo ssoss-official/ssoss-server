@@ -2,7 +2,8 @@ package com.ssoss.ssossbackend.content.infrastructure.ai;
 
 import com.ssoss.ssossbackend.content.domain.model.Channel;
 
-record ChannelPromptPolicy(String instruction, String photoGuidePlaceCount, String hashtagSection) {
+record ChannelPromptPolicy(String instruction, String photoGuidePlaceCount, PhotoGuidePlacement photoGuidePlacement,
+    String hashtagSection) {
 
     private static final String BLOG_INSTRUCTION = """
         [채널]
@@ -47,10 +48,10 @@ record ChannelPromptPolicy(String instruction, String photoGuidePlaceCount, Stri
 
     static ChannelPromptPolicy of(Channel channel) {
         return switch (channel) {
-            case BLOG -> new ChannelPromptPolicy(BLOG_INSTRUCTION, "2~4", HASHTAG_SECTION);
-            case INSTAGRAM -> new ChannelPromptPolicy(INSTAGRAM_INSTRUCTION, "1~2", HASHTAG_SECTION);
-            case DAANGN_BIZ -> new ChannelPromptPolicy(DAANGN_BIZ_INSTRUCTION, "1", NO_HASHTAG_SECTION);
-            case THREADS -> new ChannelPromptPolicy(THREADS_INSTRUCTION, "1", OPTIONAL_HASHTAG_SECTION);
+            case BLOG -> new ChannelPromptPolicy(BLOG_INSTRUCTION, "2~4", PhotoGuidePlacement.BETWEEN_PARAGRAPHS, HASHTAG_SECTION);
+            case INSTAGRAM -> new ChannelPromptPolicy(INSTAGRAM_INSTRUCTION, "1~2", PhotoGuidePlacement.TOP, HASHTAG_SECTION);
+            case DAANGN_BIZ -> new ChannelPromptPolicy(DAANGN_BIZ_INSTRUCTION, "1", PhotoGuidePlacement.TOP, NO_HASHTAG_SECTION);
+            case THREADS -> new ChannelPromptPolicy(THREADS_INSTRUCTION, "1", PhotoGuidePlacement.TOP, OPTIONAL_HASHTAG_SECTION);
         };
     }
 }

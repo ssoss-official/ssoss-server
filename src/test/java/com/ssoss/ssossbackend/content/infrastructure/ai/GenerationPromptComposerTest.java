@@ -258,39 +258,43 @@ class GenerationPromptComposerTest {
             assertThat(prompt)
                 .contains("네이버 블로그에 올릴 글을 쓴다.")
                 .contains("사진이 들어가면 좋을 자리를 2~4곳 골라")
+                .doesNotContain("본문 맨 위에 붙일")
                 .contains("해시태그는 10개 만들고");
         }
 
         @Test
-        @DisplayName("인스타그램이면 인스타그램 지시문과 사진 가이드 1~2곳, 해시태그 10개 지시가 실린다")
+        @DisplayName("인스타그램이면 인스타그램 지시문과 본문 맨 위 사진 가이드 1~2개, 해시태그 10개 지시가 실린다")
         void carriesInstagramPolicy_whenChannelInstagram() {
             String prompt = composer.compose(materialWithPhotoGuide(Channel.INSTAGRAM));
 
             assertThat(prompt)
                 .contains("인스타그램 피드에 올릴 캡션을 쓴다.")
-                .contains("사진이 들어가면 좋을 자리를 1~2곳 골라")
+                .contains("본문 맨 위에 붙일 사진 안내를 1~2개 만들어")
+                .doesNotContain("사진이 들어가면 좋을 자리를")
                 .contains("해시태그는 10개 만들고");
         }
 
         @Test
-        @DisplayName("당근 비즈면 당근 비즈 지시문과 사진 가이드 1곳이 실리고 해시태그를 만들지 않는다")
+        @DisplayName("당근 비즈면 당근 비즈 지시문과 본문 맨 위 사진 가이드 1개가 실리고 해시태그를 만들지 않는다")
         void carriesDaangnBizPolicy_whenChannelDaangnBiz() {
             String prompt = composer.compose(materialWithPhotoGuide(Channel.DAANGN_BIZ));
 
             assertThat(prompt)
                 .contains("당근 비즈프로필 소식에 올릴 글을 쓴다.")
-                .contains("사진이 들어가면 좋을 자리를 1곳 골라")
+                .contains("본문 맨 위에 붙일 사진 안내를 1개 만들어")
+                .doesNotContain("사진이 들어가면 좋을 자리를")
                 .contains("해시태그를 만들지 않는다");
         }
 
         @Test
-        @DisplayName("스레드면 스레드 지시문과 사진 가이드 1곳, 해시태그 최대 3개 지시가 실린다")
+        @DisplayName("스레드면 스레드 지시문과 본문 맨 위 사진 가이드 1개, 해시태그 최대 3개 지시가 실린다")
         void carriesThreadsPolicy_whenChannelThreads() {
             String prompt = composer.compose(materialWithPhotoGuide(Channel.THREADS));
 
             assertThat(prompt)
                 .contains("스레드에 올릴 게시물을 쓴다.")
-                .contains("사진이 들어가면 좋을 자리를 1곳 골라")
+                .contains("본문 맨 위에 붙일 사진 안내를 1개 만들어")
+                .doesNotContain("사진이 들어가면 좋을 자리를")
                 .contains("해시태그는 어울릴 때만 최대 3개까지 만들고");
         }
 

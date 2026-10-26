@@ -625,6 +625,45 @@ class GenerationApiTest extends IntegrationTest {
         }
 
         @Test
+        @DisplayName("블로그는 사진 가이드 태그가 문단 사이에 들어간다")
+        void placesTagsBetweenParagraphs_whenChannelBlog() {
+            SignupResponse signup = fixture.signupActiveMember("naver-gen-guide-blog-position");
+            Long generationId = fixture.photoGuidedGenerationId(signup.accessToken(), List.of("BLOG"));
+
+            fixture.getGeneration(signup.accessToken(), generationId)
+                .expectStatus().isOk()
+                .expectBody(GenerationDetailResponse.class)
+                .value(body -> assertThat(body.results()).singleElement()
+                    .satisfies(result -> assertThat(result.body()).isEqualTo("""
+                        테스트 본문
+                        <photo-guide title="사진 제목 1" description="사진 설명 1"/>
+                        이어지는 본문 1
+                        <photo-guide title="사진 제목 2" description="사진 설명 2"/>
+                        이어지는 본문 2""")));
+        }
+
+        @Test
+        @DisplayName("인스타그램·당근 비즈·스레드는 사진 가이드 태그가 본문 맨 위에 모이고 그 아래에 본문이 이어진다")
+        void placesTagsAboveBody_whenChannelIsNotBlog() {
+            SignupResponse signup = fixture.signupActiveMember("naver-gen-guide-top-position");
+            Long generationId = fixture.photoGuidedGenerationId(signup.accessToken(),
+                List.of("INSTAGRAM", "DAANGN_BIZ", "THREADS"));
+
+            fixture.getGeneration(signup.accessToken(), generationId)
+                .expectStatus().isOk()
+                .expectBody(GenerationDetailResponse.class)
+                .value(body -> assertThat(body.results()).hasSize(3)
+                    .allSatisfy(result -> assertThat(result.body()).isEqualTo("""
+                        <photo-guide title="사진 제목 1" description="사진 설명 1"/>
+                        <photo-guide title="사진 제목 2" description="사진 설명 2"/>
+                        테스트 본문
+
+                        이어지는 본문 1
+
+                        이어지는 본문 2""")));
+        }
+
+        @Test
         @DisplayName("사진 가이드를 체크하지 않으면 본문에 사진 가이드 태그가 없다")
         void keepsBodyPlain_whenPhotoGuideUnchecked() {
             SignupResponse signup = fixture.signupActiveMember("naver-gen-guide-off");

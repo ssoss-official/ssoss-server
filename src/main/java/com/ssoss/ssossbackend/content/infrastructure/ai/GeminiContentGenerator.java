@@ -57,6 +57,7 @@ class GeminiContentGenerator implements ContentGenerator {
             .responseMimeType(MediaType.APPLICATION_JSON_VALUE)
             .responseSchema(converter.getJsonSchema())
             .build();
+        PhotoGuidePlacement placement = ChannelPromptPolicy.of(material.channel()).photoGuidePlacement();
         long startedAtNanos = System.nanoTime();
         ChatResponse response;
         try {
@@ -72,17 +73,17 @@ class GeminiContentGenerator implements ContentGenerator {
             text = response.getResult().getOutput().getText();
             GeneratedContent content = switch (converter.convert(text)) {
                 case PhotoGuidedTitledGenerationOutput output -> new GeneratedContent(output.title(),
-                    photoGuideAssembler.assemble(output.paragraphs(), output.photoGuides()),
+                    photoGuideAssembler.assemble(output.paragraphs(), output.photoGuides(), placement),
                     output.hashtags());
                 case PhotoGuidedUntitledGenerationOutput output -> new GeneratedContent(null,
-                    photoGuideAssembler.assemble(output.paragraphs(), output.photoGuides()),
+                    photoGuideAssembler.assemble(output.paragraphs(), output.photoGuides(), placement),
                     output.hashtags());
                 case TitledGenerationOutput output -> new GeneratedContent(output.title(),
                     photoGuideAssembler.assemble(output.paragraphs(), List.of()), output.hashtags());
                 case UntitledGenerationOutput output -> new GeneratedContent(null,
                     photoGuideAssembler.assemble(output.paragraphs(), List.of()), output.hashtags());
                 case PhotoGuidedBodyOnlyGenerationOutput output -> new GeneratedContent(null,
-                    photoGuideAssembler.assemble(output.paragraphs(), output.photoGuides()), List.of());
+                    photoGuideAssembler.assemble(output.paragraphs(), output.photoGuides(), placement), List.of());
                 case BodyOnlyGenerationOutput output -> new GeneratedContent(null,
                     photoGuideAssembler.assemble(output.paragraphs(), List.of()), List.of());
                 default -> throw new IllegalStateException("알 수 없는 생성 산출 형태입니다");

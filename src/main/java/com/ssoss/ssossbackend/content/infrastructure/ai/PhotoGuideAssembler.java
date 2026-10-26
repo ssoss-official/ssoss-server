@@ -1,7 +1,9 @@
 package com.ssoss.ssossbackend.content.infrastructure.ai;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import com.ssoss.ssossbackend.content.domain.model.PhotoGuideTag;
 
@@ -42,5 +44,40 @@ class PhotoGuideAssembler {
         }
         matcher.appendTail(assembled);
         return assembled.toString();
+    }
+
+    String assemble(List<String> paragraphs, List<PhotoGuideOutput> photoGuides, PhotoGuidePlacement placement) {
+        return placement == PhotoGuidePlacement.TOP
+            ? assembleOnTop(paragraphs, photoGuides)
+            : assemble(paragraphs, photoGuides);
+    }
+
+    String assembleOnTop(List<String> paragraphs, List<PhotoGuideOutput> photoGuides) {
+        if (paragraphs == null) {
+            return null;
+        }
+        List<String> bodyParagraphs = paragraphs.stream()
+            .filter(paragraph -> paragraph != null)
+            .map(this::withoutMarkers)
+            .filter(paragraph -> !paragraph.isBlank())
+            .toList();
+        if (bodyParagraphs.isEmpty()) {
+            return "";
+        }
+        List<String> elements = new ArrayList<>();
+        List<PhotoGuideOutput> guides = photoGuides == null ? List.of() : photoGuides;
+        guides.stream()
+            .filter(PhotoGuideOutput::isComplete)
+            .map(guide -> TAG.formatted(new TagAttribute(guide.title()), new TagAttribute(guide.description())))
+            .forEach(elements::add);
+        elements.addAll(bodyParagraphs);
+        return paragraphJoiner.join(elements);
+    }
+
+    private String withoutMarkers(String paragraph) {
+        return paragraph.lines()
+            .map(PhotoGuideTag::removeFrom)
+            .filter(line -> !line.isBlank())
+            .collect(Collectors.joining("\n"));
     }
 }
