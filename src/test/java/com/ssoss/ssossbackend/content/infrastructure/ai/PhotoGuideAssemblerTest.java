@@ -264,6 +264,113 @@ class PhotoGuideAssemblerTest {
     }
 
     @Nested
+    @DisplayName("본문 맨 위 배치")
+    class OnTop {
+
+        @Test
+        @DisplayName("카드가 본문 맨 위에 순서대로 한 줄씩 붙고 그 아래에 본문이 이어진다")
+        void placesGuidesAboveBodyInOrder() {
+            List<PhotoGuideOutput> guides = List.of(
+                new PhotoGuideOutput("시그니처 메뉴", "위에서 내려다보며 찍기"),
+                new PhotoGuideOutput("매장 외관", "간판이 보이게 찍기"));
+
+            String assembled = assembler.assembleOnTop(List.of("첫 문단", "둘째 문단"), guides);
+
+            assertThat(assembled).isEqualTo("""
+                <photo-guide title="시그니처 메뉴" description="위에서 내려다보며 찍기"/>
+                <photo-guide title="매장 외관" description="간판이 보이게 찍기"/>
+                첫 문단
+
+                둘째 문단""");
+        }
+
+        @Test
+        @DisplayName("본문에 마커가 섞여 와도 마커는 지워지고 카드는 맨 위에 붙는다")
+        void removesMarkersFromBody() {
+            List<String> paragraphs = List.of("첫 문단", "<photo-guide/>", "둘째 문단\n<photo-guide/>", "셋째 <photo-guide/>문단");
+            List<PhotoGuideOutput> guides = List.of(new PhotoGuideOutput("창가 자리", "햇빛이 드는 낮에 찍기"));
+
+            String assembled = assembler.assembleOnTop(paragraphs, guides);
+
+            assertThat(assembled).isEqualTo("""
+                <photo-guide title="창가 자리" description="햇빛이 드는 낮에 찍기"/>
+                첫 문단
+
+                둘째 문단
+
+                셋째 문단""");
+        }
+
+        @Test
+        @DisplayName("제목이나 설명이 빈 카드는 버려지고 나머지만 맨 위에 붙는다")
+        void dropsIncompleteGuides() {
+            List<PhotoGuideOutput> guides = List.of(
+                new PhotoGuideOutput("   ", "위에서 내려다보며 찍기"),
+                new PhotoGuideOutput("매장 외관", "간판이 보이게 찍기"));
+
+            String assembled = assembler.assembleOnTop(List.of("본문"), guides);
+
+            assertThat(assembled).isEqualTo("""
+                <photo-guide title="매장 외관" description="간판이 보이게 찍기"/>
+                본문""");
+        }
+
+        @Test
+        @DisplayName("카드 목록이 없으면 본문만 남는다")
+        void keepsBodyOnly_whenGuidesAreNull() {
+            String assembled = assembler.assembleOnTop(List.of("첫 문단", "둘째 문단"), null);
+
+            assertThat(assembled).isEqualTo("첫 문단\n\n둘째 문단");
+        }
+
+        @Test
+        @DisplayName("문단이 하나도 없으면 카드가 있어도 빈 본문이 된다")
+        void returnsEmptyBody_whenNoParagraphs() {
+            String assembled = assembler.assembleOnTop(List.of("<photo-guide/>"),
+                List.of(new PhotoGuideOutput("메뉴", "찍기")));
+
+            assertThat(assembled).isEmpty();
+        }
+
+        @Test
+        @DisplayName("문단 배열이 없으면 그대로 null 이 반환된다")
+        void returnsNull_whenParagraphsAreNull() {
+            assertThat(assembler.assembleOnTop(null, List.of(new PhotoGuideOutput("메뉴", "찍기")))).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("사진 위치에 따른 조립")
+    class ByPlacement {
+
+        private final List<String> paragraphs = List.of("첫 문단", "<photo-guide/>", "둘째 문단");
+        private final List<PhotoGuideOutput> guides = List.of(new PhotoGuideOutput("창가 자리", "햇빛이 드는 낮에 찍기"));
+
+        @Test
+        @DisplayName("위치가 문단 사이면 마커 자리에 태그가 조립된다")
+        void assemblesAtMarker_whenBetweenParagraphs() {
+            String assembled = assembler.assemble(paragraphs, guides, PhotoGuidePlacement.BETWEEN_PARAGRAPHS);
+
+            assertThat(assembled).isEqualTo("""
+                첫 문단
+                <photo-guide title="창가 자리" description="햇빛이 드는 낮에 찍기"/>
+                둘째 문단""");
+        }
+
+        @Test
+        @DisplayName("위치가 맨 위면 태그가 본문 맨 위에 붙고 마커는 지워진다")
+        void placesOnTop_whenTop() {
+            String assembled = assembler.assemble(paragraphs, guides, PhotoGuidePlacement.TOP);
+
+            assertThat(assembled).isEqualTo("""
+                <photo-guide title="창가 자리" description="햇빛이 드는 낮에 찍기"/>
+                첫 문단
+
+                둘째 문단""");
+        }
+    }
+
+    @Nested
     @DisplayName("태그 문자열")
     class Tag {
 

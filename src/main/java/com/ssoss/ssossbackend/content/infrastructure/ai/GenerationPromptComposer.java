@@ -46,6 +46,13 @@ class GenerationPromptComposer {
         title 은 어떤 사진인지 15자 이내로, description 은 어떻게 찍으면 좋은지 40자 이내로 쓴다.
         마커와 배열 외의 방법으로 사진을 언급하지 않는다.""";
 
+    private static final String TOP_PHOTO_GUIDE_SECTION = """
+        [사진 가이드]
+        본문 맨 위에 붙일 사진 안내를 %s개 만들어 photoGuides 배열에 담는다.
+        사진은 본문 위에 따로 붙으므로 paragraphs 에는 <photo-guide/> 마커를 넣지 않는다.
+        title 은 어떤 사진인지 15자 이내로, description 은 어떻게 찍으면 좋은지 40자 이내로 쓴다.
+        배열 외의 방법으로 사진을 언급하지 않는다.""";
+
     private static final String SECTION_SEPARATOR = "\n";
 
     private final StoreSectionComposer storeSectionComposer;
@@ -82,7 +89,9 @@ class GenerationPromptComposer {
             sections.addAll(styleSourceSectionComposer.compose(material.styleSource()));
         }
         if (material.photoGuideChecked()) {
-            sections.add(PHOTO_GUIDE_SECTION.formatted(channelPolicy.photoGuidePlaceCount()));
+            String photoGuideSection = channelPolicy.photoGuidePlacement() == PhotoGuidePlacement.TOP
+                ? TOP_PHOTO_GUIDE_SECTION : PHOTO_GUIDE_SECTION;
+            sections.add(photoGuideSection.formatted(channelPolicy.photoGuidePlaceCount()));
         }
         sections.add(channelPolicy.hashtagSection());
         return String.join(SECTION_SEPARATOR, sections);

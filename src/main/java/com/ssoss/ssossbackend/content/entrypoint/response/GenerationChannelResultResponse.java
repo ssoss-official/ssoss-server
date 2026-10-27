@@ -14,6 +14,7 @@ public record GenerationChannelResultResponse(
     @Schema(description = """
         본문.
         사진 가이드를 체크한 생성이면 본문 안에 `<photo-guide title="..." description="..."/>` 태그가 섞여 있습니다.
+        네이버 블로그는 문단 사이에, 인스타그램·당근 비즈·스레드는 본문 맨 위에 태그가 있습니다.
         닫는 태그가 없는 한 덩어리입니다.
         속성값의 &, <, >, " 는 HTML 방식으로 이스케이프됩니다.""",
         example = "이번 주말, 매장에서 아메리카노 1+1 이벤트를 진행합니다..."
