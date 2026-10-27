@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/central-makeus/ssoss-server
+  IMAGE: ghcr.io/ssoss-official/ssoss-server
 
 jobs:
   build-and-push:
