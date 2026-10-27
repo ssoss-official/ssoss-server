@@ -29,7 +29,7 @@ class CreditServiceTest {
                     return List.of(1L, 2L, 3L);
                 }
             };
-            CreditWriter creditWriter = new CreditWriter(null, null, null) {
+            CreditWriter creditWriter = new CreditWriter(null, null, null, 0) {
                 @Override
                 public boolean renewCycle(Long memberId) {
                     if (memberId.equals(2L)) {

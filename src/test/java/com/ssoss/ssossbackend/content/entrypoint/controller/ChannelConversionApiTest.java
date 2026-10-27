@@ -268,7 +268,9 @@ class ChannelConversionApiTest extends IntegrationTest {
             ContentSaveResponse origin = savedBlogOrigin(signup.accessToken());
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
             fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
-            fixture.startedGenerationId(signup.accessToken(), List.of("BLOG"));
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), ALL_CHANNELS);
+            fixture.startedGenerationId(signup.accessToken(), List.of("BLOG", "INSTAGRAM", "THREADS"));
             assertThat(fixture.creditBalance(signup.accessToken()).balance()).isZero();
 
             fixture.convertChannels(signup.accessToken(), origin.contentId(),
@@ -278,7 +280,7 @@ class ChannelConversionApiTest extends IntegrationTest {
                 .expectBody(ErrorResponse.class)
                 .value(body -> assertThat(body.code()).isEqualTo(CreditErrorCode.CREDIT_INSUFFICIENT.getCode()));
 
-            assertThat(database.generationsOf(database.memberIdOf("naver-convert-credit-short"))).hasSize(4);
+            assertThat(database.generationsOf(database.memberIdOf("naver-convert-credit-short"))).hasSize(6);
         }
 
         @Test
@@ -436,12 +438,12 @@ class ChannelConversionApiTest extends IntegrationTest {
         void deductsPerChannel_whenConversionSucceeded() {
             SignupResponse signup = fixture.signupActiveMember("naver-convert-deduct");
             ContentSaveResponse origin = savedBlogOrigin(signup.accessToken());
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(45);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(95);
 
             Long generationId = fixture.convertedGenerationId(signup.accessToken(), origin.contentId(),
                 origin.contents().getFirst().contentChannelId(), List.of("INSTAGRAM", "THREADS"));
 
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(35);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(85);
             assertThat(database.deductionsOf(database.memberIdOf("naver-convert-deduct")))
                 .filteredOn(deduction -> deduction.getGenerationId().equals(generationId))
                 .singleElement()
@@ -483,7 +485,7 @@ class ChannelConversionApiTest extends IntegrationTest {
 
             assertThat(first).isNotEqualTo(second);
             assertThat(database.generationsOf(database.memberIdOf("naver-convert-repeat"))).hasSize(3);
-            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(35);
+            assertThat(fixture.creditBalance(signup.accessToken()).balance()).isEqualTo(85);
         }
     }
 }

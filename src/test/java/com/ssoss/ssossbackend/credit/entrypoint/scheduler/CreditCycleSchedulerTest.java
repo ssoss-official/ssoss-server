@@ -65,7 +65,7 @@ class CreditCycleSchedulerTest extends IntegrationTest {
     class RenewCycles {
 
         @Test
-        @DisplayName("사이클 경계를 지나 배치가 돌면 직전 사이클 무료 잔액이 소멸 회수되고 새 사이클 무료 크레딧 50 이 지급된다")
+        @DisplayName("사이클 경계를 지나 배치가 돌면 직전 사이클 무료 잔액이 소멸 회수되고 새 사이클 무료 크레딧 100 이 지급된다")
         void expiresPreviousFreeBalanceAndGrantsNewCycleCredit_whenBatchRunsAfterCycleBoundary() {
             fixture.signupActiveMember("naver-cycle-renew");
             Long memberId = database.memberIdOf("naver-cycle-renew");
@@ -76,17 +76,17 @@ class CreditCycleSchedulerTest extends IntegrationTest {
             List<CreditLedger> entries = database.ledgerOf(memberId);
             assertThat(entries).filteredOn(entry -> entry.getType() == CreditLedgerType.EXPIRE)
                 .singleElement()
-                .satisfies(entry -> assertThat(entry.getAmount()).isEqualTo(-50));
+                .satisfies(entry -> assertThat(entry.getAmount()).isEqualTo(-100));
             assertThat(entries).filteredOn(entry -> entry.getType() == CreditLedgerType.GRANT)
                 .hasSize(2)
-                .allSatisfy(entry -> assertThat(entry.getAmount()).isEqualTo(50));
+                .allSatisfy(entry -> assertThat(entry.getAmount()).isEqualTo(100));
             int ledgerSum = entries.stream().mapToInt(CreditLedger::getAmount).sum();
             String accessToken = fixture.naverLoginMember("naver-cycle-renew").accessToken();
             fixture.getCreditBalance(accessToken)
                 .expectStatus().isOk()
                 .expectBody(CreditBalanceResponse.class)
                 .value(body -> {
-                    assertThat(body.balance()).isEqualTo(50);
+                    assertThat(body.balance()).isEqualTo(100);
                     assertThat(body.balance()).isEqualTo(ledgerSum);
                 });
         }
@@ -106,11 +106,11 @@ class CreditCycleSchedulerTest extends IntegrationTest {
             assertThat(entries).filteredOn(entry -> entry.getType() == CreditLedgerType.GRANT).hasSize(2);
             assertThat(creditRepository.findByMemberId(memberId))
                 .get()
-                .satisfies(credit -> assertThat(credit.getFreeBalance()).isEqualTo(50));
+                .satisfies(credit -> assertThat(credit.getFreeBalance()).isEqualTo(100));
         }
 
         @Test
-        @DisplayName("사이클 중간 가입자는 배치가 돌기 전에도 가입 시점 지급 잔액 50 을 보유한다")
+        @DisplayName("사이클 중간 가입자는 배치가 돌기 전에도 가입 시점 지급 잔액 100 을 보유한다")
         void holdsSignupGrantedBalance_whenMemberSignedUpMidCycleBeforeBatch() {
             clock.advanceBy(PAST_CYCLE_BOUNDARY);
 
@@ -119,7 +119,7 @@ class CreditCycleSchedulerTest extends IntegrationTest {
             fixture.getCreditBalance(signup.accessToken())
                 .expectStatus().isOk()
                 .expectBody(CreditBalanceResponse.class)
-                .value(body -> assertThat(body.balance()).isEqualTo(50));
+                .value(body -> assertThat(body.balance()).isEqualTo(100));
         }
 
         @Test
@@ -138,18 +138,18 @@ class CreditCycleSchedulerTest extends IntegrationTest {
                 .singleElement()
                 .satisfies(entry -> {
                     assertThat(entry.getType()).isEqualTo(CreditLedgerType.GRANT);
-                    assertThat(entry.getAmount()).isEqualTo(50);
+                    assertThat(entry.getAmount()).isEqualTo(100);
                 });
             assertThat(creditRepository.findByMemberId(earlyId))
                 .get()
-                .satisfies(credit -> assertThat(credit.getFreeBalance()).isEqualTo(50));
+                .satisfies(credit -> assertThat(credit.getFreeBalance()).isEqualTo(100));
             assertThat(creditRepository.findByMemberId(lateId))
                 .get()
-                .satisfies(credit -> assertThat(credit.getFreeBalance()).isEqualTo(50));
+                .satisfies(credit -> assertThat(credit.getFreeBalance()).isEqualTo(100));
         }
 
         @Test
-        @DisplayName("탈퇴 유예 중인 회원도 사이클이 갱신되어 복구하면 새 사이클 잔액 50 을 보유한다")
+        @DisplayName("탈퇴 유예 중인 회원도 사이클이 갱신되어 복구하면 새 사이클 잔액 100 을 보유한다")
         void renewsWithdrawnMemberInGracePeriod_whenBatchRunsBeforeRecovery() {
             fixture.signupActiveMember("naver-cycle-withdrawn");
             Long memberId = database.memberIdOf("naver-cycle-withdrawn");
@@ -169,7 +169,7 @@ class CreditCycleSchedulerTest extends IntegrationTest {
             fixture.getCreditBalance(recovered.accessToken())
                 .expectStatus().isOk()
                 .expectBody(CreditBalanceResponse.class)
-                .value(body -> assertThat(body.balance()).isEqualTo(50));
+                .value(body -> assertThat(body.balance()).isEqualTo(100));
         }
     }
 }
