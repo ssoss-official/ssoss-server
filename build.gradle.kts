@@ -1,7 +1,12 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
+
 plugins {
     java
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.spring") version "2.3.21"
     id("org.springframework.boot") version "4.1.0"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 group = "com.ssoss"
@@ -11,6 +16,13 @@ description = "ssoss-backend"
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
     }
 }
 
@@ -40,6 +52,8 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("tools.jackson.module:jackson-module-kotlin")
 
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -90,12 +104,14 @@ tasks.register<Test>("liveTest") {
     val dotEnvFile = layout.projectDirectory.file(".env").asFile
     doFirst {
         if (System.getenv("GEMINI_API_KEY").isNullOrBlank()) {
-            val fromDotEnv = dotEnvFile.takeIf { it.exists() }
-                ?.readLines()
-                ?.firstOrNull { it.startsWith("GEMINI_API_KEY=") }
-                ?.substringAfter("=")
-                ?.trim()
-                ?.trim('"')
+            val fromDotEnv =
+                dotEnvFile
+                    .takeIf { it.exists() }
+                    ?.readLines()
+                    ?.firstOrNull { it.startsWith("GEMINI_API_KEY=") }
+                    ?.substringAfter("=")
+                    ?.trim()
+                    ?.trim('"')
             require(!fromDotEnv.isNullOrBlank()) {
                 "GEMINI_API_KEY 가 환경변수에도 .env 에도 없습니다"
             }

@@ -13,3 +13,6 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
